@@ -13,11 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Resuelve cada uno de los ejercicios según el enunciado del test. Imprime cada ejecución de forma que se pueda
  * corroborar el correcto funcionamiento.
- *
  */
 public class Ejercicios {
 
-    /** TODO:
+    /**
+     * TODO:
      *    - Multiplica todos los elementos por 2.
      */
     @Test
@@ -29,20 +29,22 @@ public class Ejercicios {
 
     }
 
-    /** TODO:
+    /**
+     * TODO:
      *    - Quédate solo con los elementos pares y multiplícalos por 2.
      */
     @Test
     void multiplicaLosParesPor2() {
         final var source = Observable.fromIterable(List.of(1, 2, 3, 4, 5, 6));
 
-        source.filter(integer -> integer % 2 != 0)
+        source.filter(integer -> integer % 2 == 0)
                 .map(integer -> integer * 2)
                 .subscribe(System.out::println);
 
     }
 
-    /** TODO:
+    /**
+     * TODO:
      *    - Repite 3 veces cada elemento.
      */
     @Test
@@ -54,7 +56,8 @@ public class Ejercicios {
 
     }
 
-    /** TODO:
+    /**
+     * TODO:
      *    - Repite 3 veces cada elemento par y 1 sola vez los elementos impares.
      */
     @Test
@@ -63,30 +66,70 @@ public class Ejercicios {
 
         StringBuilder result = new StringBuilder();
 
+        /*
         source.groupBy(i -> 0 == (i % 2) ? "PAR" : "IMPAR")
                 .subscribe(group -> group
                         .map(number ->
                                 Optional.of("PAR".equals(group.getKey()))
-                                        .filter(isEven -> isEven)
+                                        .filter(isEven -> isEven == true)
                                         .map(i -> number.toString().repeat(3))
                                         .orElse(number.toString()))
-                        .subscribe(result::append));
-
+                        .subscribe(System.out::println));
+         */
         // Flatmap approach
-        /*source.flatMap(element -> Optional.of(element % 2 == 0)
+
+        source.flatMap(element -> Optional.of(element % 2 == 0)
                         .filter(isEven -> isEven)
                         .map(isEven -> Observable.fromIterable(Collections.nCopies(3, element)))
                         .orElseGet(() -> Observable.just(element)))
-                .subscribe(result::append);*/
+                .subscribe(result::append);
 
         assertEquals("122234445666", result.toString());
     }
 
-    /** TODO:
-     *    - Emite elementos hasta que encuentres un elemento impar, entonces lanza un error.
+    /**
+     * TODO:
+     *    - Emite elementos hasta que encuentres un elemento par, entonces lanza un error.
      */
     @Test
     void emiteElementosHastaQueEncuentresUnElementoImpar() {
         final var source = Observable.fromIterable(List.of(1, 2, 3, 4, 5, 6));
+
+        // Utilizando doOnNext
+        source.doOnNext(element -> {
+                    if (element % 2 == 0) {
+                        throw new RuntimeException("Todo mal por acá");
+                    }
+                })
+                .subscribe(
+                        System.out::println,
+                        Throwable::printStackTrace
+                );
+
+        // Utilizando map
+        source.map(element -> {
+                    if (element % 2 == 0) {
+                        throw new RuntimeException("Todo mal por acá");
+                    } else {
+                        return element;
+                    }
+                })
+                .subscribe(
+                        System.out::println,
+                        Throwable::printStackTrace
+                );
+
+        //Utilizando flatMap
+        source.flatMap(element -> {
+                    if (element % 2 == 0) {
+                        return Observable.error(new RuntimeException("Todo mal por acá"));
+                    } else {
+                        return Observable.just(element);
+                    }
+                })
+                .subscribe(
+                        System.out::println,
+                        Throwable::printStackTrace
+                );
     }
 }
