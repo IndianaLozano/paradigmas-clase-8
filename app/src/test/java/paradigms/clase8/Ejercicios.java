@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Resuelve cada uno de los ejercicios según el enunciado del test. Imprime cada ejecución de forma que se pueda
  * corroborar el correcto funcionamiento.
@@ -59,11 +61,25 @@ public class Ejercicios {
     void repite3VecesLosParesY1VezLosImpares() {
         final var source = Observable.fromIterable(List.of(1, 2, 3, 4, 5, 6));
 
-        source.flatMap(element -> Optional.of(element % 2 == 0)
+        StringBuilder result = new StringBuilder();
+
+        source.groupBy(i -> 0 == (i % 2) ? "PAR" : "IMPAR")
+                .subscribe(group -> group
+                        .map(number ->
+                                Optional.of("PAR".equals(group.getKey()))
+                                        .filter(isEven -> isEven)
+                                        .map(i -> number.toString().repeat(3))
+                                        .orElse(number.toString()))
+                        .subscribe(result::append));
+
+        // Flatmap approach
+        /*source.flatMap(element -> Optional.of(element % 2 == 0)
                         .filter(isEven -> isEven)
                         .map(isEven -> Observable.fromIterable(Collections.nCopies(3, element)))
                         .orElseGet(() -> Observable.just(element)))
-                .subscribe(System.out::println);
+                .subscribe(result::append);*/
+
+        assertEquals("122234445666", result.toString());
     }
 
     /** TODO:
@@ -72,14 +88,5 @@ public class Ejercicios {
     @Test
     void emiteElementosHastaQueEncuentresUnElementoImpar() {
         final var source = Observable.fromIterable(List.of(1, 2, 3, 4, 5, 6));
-
-        source.doOnNext(element -> {
-                    if (element % 2 == 0) {
-                        throw new RuntimeException("Apaaaa, un valor impa");
-                    }
-                })
-                .subscribe(System.out::println,
-                        Throwable::printStackTrace);
-
     }
 }
